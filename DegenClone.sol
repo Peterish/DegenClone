@@ -9,8 +9,7 @@ error NotEnoughDegen(string message, uint requiredAmount);
 contract DegenClone is ERC20, Ownable {
     enum RedeemItems { Missile, Drone, Chopper, RPG }
 
-    // Mapping to track redeemed items for each user
-    mapping(address => string[]) private _redeemedItems;
+    mapping(address => string[]) public _redeemedItems;
 
     constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {}
 
@@ -19,14 +18,14 @@ contract DegenClone is ERC20, Ownable {
     }
 
     function transferDegen(address to, uint256 amount) external returns (bool success) {
-        if (amount < balanceOf(msg.sender)) {
+        if (amount > balanceOf(msg.sender)) {
             revert NotEnoughDegen("Degen Token not enough", amount);
         }
         success = transfer(to, amount);
     }
 
     function burn(uint256 amount) external {
-        if (amount < balanceOf(msg.sender)) {
+        if (amount > balanceOf(msg.sender)) {
             revert NotEnoughDegen("Degen Token not enough", amount);
         }
         _burn(msg.sender, amount);
@@ -51,7 +50,6 @@ contract DegenClone is ERC20, Ownable {
         }
         _transfer(msg.sender, address(this), price);
 
-        // Record the redeemed item
         string[] storage currentRedeemedItems = _redeemedItems[msg.sender];
         currentRedeemedItems.push(_itemToString(item));
     }
@@ -64,7 +62,6 @@ contract DegenClone is ERC20, Ownable {
         return balanceOf(msg.sender);
     }
 
-    // Helper function to convert enum to string
     function _itemToString(RedeemItems item) internal pure returns (string memory) {
         if (item == RedeemItems.Missile) {
             return "Missile";
@@ -79,7 +76,6 @@ contract DegenClone is ERC20, Ownable {
         }
     }
 
-    // Function to display all redeemed items for a user
     function displayRedeemedItems(address user) public view returns (string[] memory) {
         return _redeemedItems[user];
     }
